@@ -25,10 +25,10 @@ const date = new Date();
       i === new Date().getDate() &&
       date.getMonth() === new Date().getMonth()
     ) {
-      days += `<div class="today">${i}  </div>`;
+      days += `<div class="today"> ${i}</div>`;
       
     } else {
-      days += `<div>${i}  </div>`;
+      days += `<div> ${i}</div>`;
     }
  
   }
@@ -43,7 +43,7 @@ select.forEach(function(elem) {
   elem.addEventListener("click", function() {
    
      let divValue = document.createElement("array") ;
-      divValue.innerHTML = elem.innerHTML ;
+      divValue.innerHTML = elem.innerHTML+ "," ;
       console.log(divValue.innerHTML) ;
      newDiv =  document.getElementById("select") ;
      newDiv.appendChild(divValue) ;
