@@ -18,7 +18,7 @@
 
 .calendar {
  
-  width: 37rem;
+  width: 50rem;
   height: 25rem;
   background-color: #ffffff;
  
@@ -31,7 +31,7 @@
 
 .month {
   
-  width:37rem ;
+  width:50rem ;
   height: 5rem;
   background-color: #cabbf9;
   display: flex;
@@ -49,18 +49,28 @@
 
 .days div {
   border: 0.1rem solid rgb(74, 65, 65);
-  width: calc(37rem / 10);
+  width: calc(50rem / 10);
   height: 4rem;
-  display: flex;
-  justify-content: center;
+  display:flex ;
+ text-align: end; 
+  justify-content:center;
   align-items: center;
 }
 
 .days div:hover:not(.today) {
-  background-color: #ffdede;
+  background-color: #87e2ee;
   cursor: pointer;
 }
 
 .today {
   background-color: #7296e3;
 }
+
+.font{
+  font-size: 15px;
+  justify-content: flex-start !important;
+  padding: 5px;
+  overflow:hidden;
+
+}
+ 
