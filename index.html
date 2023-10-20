@@ -1,29 +1,211 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Calendar</title>
-    <link rel="stylesheet" href="style.css" />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;1,100;1,300;1,400;1,500&family=Rubik:wght@300&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;1,100;1,200;1,300;1,400;1,500&family=Cairo:wght@400;600&family=Dancing+Script:wght@400;500;700&family=Montserrat:wght@300&family=Orbitron:wght@700&family=Poppins&family=Roboto:ital,wght@0,400;0,500;1,100;1,700&display=swap');
+
+      * {
+        font-family: 'Barlow', 'Poppins', 'Times New Roman', Times, serif;
+        font-size: 20px;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        margin-top: 30px;
+        display: flex;
+        flex-direction: column;
+        margin-left: 30%;
+      }
+      table {
+        border-collapse: collapse;
+        width: 50%;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid black;
+      }
+      th,
+      td {
+        padding: 10px;
+        text-align: center;
+        word-break: break-all; /* Allow words to break inside table cells */
+      }
+
+      td {
+        cursor: pointer;
+        width: 150px;
+        height: 30px;
+      }
+
+      .selected {
+        background-color: #00f;
+        color: #fff;
+      }
+
+      .selected-dates {
+        margin: 30px 0;
+      }
+      .color {
+        color: #00f;
+      }
+    </style>
   </head>
   <body>
     <div class="container">
-      <div class="calendar">
-        <div class="month">
-         
-          <div  class="date">
-            <h1></h1>
-            <p></p>
-          </div>   </div>
-     
-        <div class="days" id="days" > </div> 
-        
+      <div>
+        <h1 id="monthYear" class="color"></h1>
+        <table id="calendar"></table>
+      </div>
 
-        <div id="select" class="select"> selected Date: </div>
+      <div class="selected-dates">
+        <h2>Selected Dates:</h2>
+        <div id="selectedDates"></div>
+      </div>
 
-      </div>   </div>
-     
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.26.1/axios.min.js" integrity="sha512-bPh3uwgU5qEMipS/VOmRqynnMXGGSRv+72H/N260MQeXZIK4PG48401Bsby9Nq5P5fz7hy5UGNmC/W1Z51h2GQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-      <script src="script.js"></script>
+      <div>
+        <h1 class="color">Username</h1>
+        <table id="userTable"></table>
+      </div>
+    </div>
+
+    <script>
+      // Function to generate the calendar table
+      function generateCalendar(year, month) {
+        const calendar = document.getElementById('calendar');
+        const monthYear = document.getElementById('monthYear');
+        monthYear.textContent = `${monthNames[month]} ${year}`;
+
+        // Calculate the first day of the current month
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+
+        let currentDate = new Date(year, month, 1);
+
+        let html = '';
+        for (let i = 0; i < 4; i++) {
+          html += '<tr>';
+          for (let j = 0; j < 10; j++) {
+            if (currentDate >= firstDay && currentDate <= lastDay) {
+              const dateStr = currentDate.toISOString().split('T')[0];
+              html += `<td data-date="${dateStr}">${currentDate.getDate()}</td>`;
+            } else {
+              html += '<td></td>'; // Add empty cells for days outside the current month
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+          }
+          html += '</tr>';
+        }
+        calendar.innerHTML = html;
+      }
+
+      // Function to retrieve usernames from the API and create the user table
+      function loadUsernames() {
+        fetch('https://jsonplaceholder.typicode.com/users')
+          .then((response) => response.json())
+          .then((users) => {
+            const userTable = document.getElementById('userTable');
+            userTable.innerHTML = '';
+
+            const currentDayOfMonth = new Date().getDate();
+
+            for (let i = 0; i < 4; i++) {
+              const row = document.createElement('tr');
+              for (let j = 0; j < 10; j++) {
+                const user = users[i * 10 + j];
+                const index = i * 10 + j;
+                const cell = document.createElement('td');
+                cell.textContent = user ? user.username : '';
+
+                // Check if the index matches the current day of the month
+                if (index === currentDayOfMonth) {
+                  cell.classList.add('selected'); // Append a class for styling
+                }
+
+                row.appendChild(cell);
+                cell.dataset.index = index;
+              }
+              userTable.appendChild(row);
+            }
+          });
+      }
+
+      const monthNames = [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December',
+      ];
+
+      let selectedDates = [];
+
+      // Load selected dates from local storage
+      if (localStorage.getItem('selectedDates')) {
+        selectedDates = JSON.parse(localStorage.getItem('selectedDates'));
+
+        // Highlight selected dates
+        selectedDates.forEach((date) => {
+          const cell = document.querySelector(`[data-date="${date}"]`);
+          if (cell) {
+            cell.classList.add('selected');
+          }
+        });
+      }
+
+      // Function to update the UI with selected dates
+      function updateSelectedDatesUI() {
+        const selectedDatesDiv = document.getElementById('selectedDates');
+        const formattedDates = selectedDates.map((date) =>
+          new Date(date).getDate()
+        );
+        selectedDatesDiv.textContent = `[${formattedDates.join(', ')}]`; // Display selected dates with brackets
+      }
+
+      // Function to handle cell click
+      function handleCellClick(event) {
+        const cell = event.target;
+        if (cell.tagName === 'TD') {
+          const date = cell.getAttribute('data-date');
+          if (selectedDates.includes(date)) {
+            selectedDates = selectedDates.filter((d) => d !== date);
+          } else {
+            selectedDates.push(date);
+          }
+          localStorage.setItem('selectedDates', JSON.stringify(selectedDates));
+          updateSelectedDatesUI();
+          cell.classList.toggle('selected');
+        }
+      }
+
+      const calendar = document.getElementById('calendar');
+      calendar.addEventListener('click', handleCellClick);
+
+      const currentDate = new Date();
+      generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+      updateSelectedDatesUI();
+
+      // Highlight the current date
+      const today = new Date();
+      const currentDay = today.getDate();
+      const cells = document.querySelectorAll('td');
+      cells.forEach((cell) => {
+        const date = new Date(cell.getAttribute('data-date'));
+        if (date.getDate() === currentDay) {
+          cell.classList.add('selected');
+        }
+      });
+
+      // Load usernames
+      loadUsernames();
+    </script>
   </body>
 </html>
